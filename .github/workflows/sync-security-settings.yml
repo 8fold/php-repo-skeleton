@@ -23,23 +23,18 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           ORG_NAME: ${{ github.repository_owner }}
-          SOURCE_REPO: ${{ github.event.repository.name }}
         run: |
           FAIL_COUNT=0
           FAILED_REPOS=()
 
-          # Fetch repository name and visibility (private vs public)
+          # Fetch repository names and visibility (private vs public) for active repos
           REPOS_JSON=$(gh api "orgs/$ORG_NAME/repos?per_page=100" --paginate --jq '.[] | select(.archived == false and .disabled == false) | {name: .name, private: .private}')
 
-          echo "$REPOS_JSON" | jq -c '.' | while read -r repo_info; do
+          while read -r repo_info; do
             [ -z "$repo_info" ] && continue
 
             repo=$(echo "$repo_info" | jq -r '.name')
             is_private=$(echo "$repo_info" | jq -r '.private')
-
-            if [ "$repo" = "$SOURCE_REPO" ]; then
-              continue
-            fi
 
             echo ""
             echo "Configuring security settings for: $repo (Private: $is_private)"
@@ -79,6 +74,15 @@ jobs:
             fi
 
             if [ "$REPO_FAILED" -eq 1 ]; then
-              echo "::error::Security configuration failed for $repo"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              FAILED_REPOS+=("$repo")
             fi
-          done
+          done < <(echo "$REPOS_JSON" | jq -c '.')
+
+          echo ""
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "::error::Security configuration failed for $FAIL_COUNT repository/repositories: ${FAILED_REPOS[*]}"
+            exit 1
+          else
+            echo "Successfully enforced security settings across all repositories (including source)."
+          fi
