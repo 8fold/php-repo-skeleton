@@ -5,6 +5,9 @@ on:
     - cron: '0 0 1 */3 *'    # Quarterly sync
   workflow_dispatch:          # Manual trigger
 
+permissions:
+  contents: read
+
 jobs:
   sync-security:
     name: Enforce Org-Wide Security & Quality Settings
