@@ -1,4 +1,6 @@
 name: Distribute All Governance Assets Across Org
+permissions:
+  contents: read
 
 on:
   push:
