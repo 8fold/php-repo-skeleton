@@ -1,4 +1,4 @@
-name: Sync Repository Security & Quality Settings
+name: Sync Security & Quality Settings
 permissions:
   contents: read
 
