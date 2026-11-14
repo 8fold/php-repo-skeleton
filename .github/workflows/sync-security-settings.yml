@@ -37,13 +37,17 @@ jobs:
             is_private=$(echo "$repo_info" | jq -r '.private')
 
             echo ""
-            echo "Configuring security settings for: $repo (Private: $is_private)"
+            echo "Configuring security & quality settings for: $repo (Private: $is_private)"
             REPO_FAILED=0
 
             # --- A. Enable Private Vulnerability Reporting (Security Advisories) ---
-            if ! gh api "repos/$ORG_NAME/$repo" -X PATCH -F private_vulnerability_reporting_enabled=true > /dev/null 2>&1; then
-              echo "::warning::Failed to enable Private Vulnerability Reporting for $repo"
-              REPO_FAILED=1
+            # Uses dedicated PUT endpoint, fallback to JSON boolean PATCH
+            if ! gh api "repos/$ORG_NAME/$repo/private-vulnerability-reporting" -X PUT > /dev/null 2>&1; then
+              PVR_PAYLOAD=$(jq -n '{private_vulnerability_reporting_enabled: true}')
+              if ! gh api "repos/$ORG_NAME/$repo" -X PATCH --input - <<< "$PVR_PAYLOAD" > /dev/null 2>&1; then
+                echo "::warning::Failed to enable Private Vulnerability Reporting for $repo"
+                REPO_FAILED=1
+              fi
             fi
 
             # --- B. Enable Dependabot Alerts (Free on Public & Private) ---
@@ -58,8 +62,15 @@ jobs:
               REPO_FAILED=1
             fi
 
-            # --- D. Secret Scanning & Push Protection ---
-            # Secret Scanning & Push Protection are free ONLY for Public repos on GitHub Free/Team plans.
+            # --- D. Enable Code Scanning Alerts & Code Quality Findings (CodeQL Default Setup) ---
+            # Enables automatic CodeQL analysis with extended query suite (Security + Quality)
+            CODEQL_PAYLOAD=$(jq -n '{state: "configured", query_suite: "extended"}')
+            if ! gh api "repos/$ORG_NAME/$repo/code-scanning/default-setup" -X PATCH --input - <<< "$CODEQL_PAYLOAD" > /dev/null 2>&1; then
+              CODEQL_FALLBACK=$(jq -n '{state: "configured", query_suite: "default"}')
+              gh api "repos/$ORG_NAME/$repo/code-scanning/default-setup" -X PATCH --input - <<< "$CODEQL_FALLBACK" > /dev/null 2>&1 || true
+            fi
+
+            # --- E. Secret Scanning & Push Protection (Public Repos / GHAS) ---
             if [ "$is_private" = "false" ]; then
               PAYLOAD=$(jq -n '{
                 security_and_analysis: {
@@ -84,5 +95,5 @@ jobs:
             echo "::error::Security configuration failed for $FAIL_COUNT repository/repositories: ${FAILED_REPOS[*]}"
             exit 1
           else
-            echo "Successfully enforced security settings across all repositories (including source)."
+            echo "Successfully enforced all security and quality settings across all repositories."
           fi
