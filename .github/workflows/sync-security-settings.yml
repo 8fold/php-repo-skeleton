@@ -1,12 +1,11 @@
 name: Sync Repository Security & Quality Settings
+permissions:
+  contents: read
 
 on:
   schedule:
     - cron: '0 0 1 */3 *'    # Quarterly sync
   workflow_dispatch:          # Manual trigger
-
-permissions:
-  contents: read
 
 jobs:
   sync-security:
