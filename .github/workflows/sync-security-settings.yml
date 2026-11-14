@@ -1,4 +1,6 @@
 name: Sync Repository Security & Quality Settings
+permissions:
+  contents: read
 
 on:
   schedule:
