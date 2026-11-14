@@ -1,4 +1,4 @@
-name: Distribute All Governance Assets Across Org
+name: Distribute Governance Assets to Org Repos
 permissions:
   contents: read
 
