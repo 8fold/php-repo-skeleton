@@ -1,4 +1,6 @@
 name: Is deployable PHP 8.5
+permissions:
+  contents: read
 
 on:
   push:
