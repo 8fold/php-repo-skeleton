@@ -1,3 +1,4 @@
+# Maintained in 8fold/php-repo-skeleton do not edit outside of 8fold/php-repo-skeleton
 name: Is deployable on PHP 8.4
 permissions:
   contents: read
