@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout php-repo-skeleton Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Generate Cross-Repo App Token
         id: app-token

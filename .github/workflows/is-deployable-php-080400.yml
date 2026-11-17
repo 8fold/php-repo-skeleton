@@ -14,13 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7
 
       - name: Setup PHP Action
         # Pin to 2.4.0
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         with:
           php-version: '8.4'
+
+      - name: Install dependencies
+        run: composer install
 
       - name: Validate composer.json and composer.lock
         run: composer validate

@@ -41,6 +41,11 @@ jobs:
           WORKFLOW_MAPPINGS=(
             ".github/workflows/is-deployable-php-080500.yml:8.5.0"
             ".github/workflows/is-deployable-php-080400.yml:8.4.0"
+            ".github/workflows/is-deployable-php-080300.yml:8.3.0"
+            ".github/workflows/is-deployable-php-080200.yml:8.2.0"
+            ".github/workflows/is-deployable-php-080100.yml:8.1.0"
+            ".github/workflows/is-deployable-php-080000.yml:8.0.0"
+            ".github/workflows/is-deployable-php-070400.yml:7.4.0"
           )
 
           REPOS=$(gh api "orgs/$ORG_NAME/repos?per_page=100" --paginate --jq '.[] | select(.archived == false and .disabled == false) | .name')
